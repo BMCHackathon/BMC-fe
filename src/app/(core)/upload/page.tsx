@@ -37,26 +37,23 @@ export default function DocumentUploadPage() {
 
   return (
       <div className="z-0 relative max-h-screen w-full pb-40 overflow-hidden bg-[radial-gradient(97.14%_56.45%_at_51.63%_0%,_#7D56F4_0%,_#4517D7_30%,_#000_100%)]">
-        <DotPattern
-          className={cn("[mask-image:radial-gradient(50vw_circle_at_center,white,transparent)]")}
-          />
-          <div>
-          <h1 className="text-2xl font-bold mb-4">Upload Document</h1>
-        <input
-          type="file"
-          onChange={handleFileChange}
-          className="mb-4"
-        />
-        <Button
-          onClick={handleUpload}
-          disabled={!file || isUploading}
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:bg-gray-400"
-        >
-          {isUploading ? 'Uploading...' : 'Upload'}
-        </Button>
-
-        {isUploading && <LoadingAnimation />}
-        {showOSMessage && <OSRecognitionMessage onClose={handleCloseOSMessage} />}
+        <DotPattern className={cn("[mask-image:radial-gradient(50vw_circle_at_center,white,transparent)]")}/>
+      <div className='relative z-10 flex flex-col lg:flex-row items-center justify-between min-h-screen space-y-6 lg:space-y-0 lg:space-x-12 px-4 lg:px-20'>  
+        <div className='flex flex-col items-center lg:items-start space-y-6 lg:space-y-8'>
+          <h1 className='text-4xl font-bold text-white text-center lg:text-left'>Upload your document</h1>
+          <p className='text-lg text-white text-center lg:text-left'>Upload a document to get started</p>
+          <div className='flex flex-col items-center lg:items-start space-y-4 lg:space-y-0 lg:flex-row'>
+            <label htmlFor='file-upload' className='cursor-pointer'>
+              <input id='file-upload' type='file' className='hidden' onChange={handleFileChange}/>
+              <Button>Choose file</Button>
+            </label>
+            <Button onClick={handleUpload} disabled={!file || isUploading}>Upload</Button>
+          </div>
+          {isUploading && <LoadingAnimation />}
+        </div>
+        <div className='relative flex items-center justify-center w-full lg:w-1/2 h-[400px] lg:h-[500px]'>
+          <img src='/images/upload.svg' alt='Upload document' className='w-full h-full object-contain'/>
+        </div>
       </div>
         </div>
   )

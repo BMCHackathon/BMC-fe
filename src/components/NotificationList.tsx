@@ -82,7 +82,7 @@ export function AnimatedListDemo({
 }: {
   className?: string;
 }) {
-  const [videoHeight, setVideoHeight] = useState(450); // Default height
+  const [videoHeight, setVideoHeight] = useState(420); // Default height
 
   useEffect(() => {
     const handleScroll = () => {
@@ -101,7 +101,7 @@ export function AnimatedListDemo({
   return (
     <div
       className={cn(
-        "relative min-h-[50%] flex w-full flex-col p-6 overflow-auto rounded-lg border bg-background md:shadow-xl",
+        "relative flex w-full flex-col p-6 overflow-auto rounded-lg border bg-background md:shadow-xl",
         className,
       )}
     >

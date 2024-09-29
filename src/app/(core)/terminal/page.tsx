@@ -54,11 +54,11 @@ export default function TerminalPage() {
   const progressPercentage = (logs.length / totalLogs) * 100
 
   return (
-    <div className="bg-black p-4 h-screen flex flex-col">
+    <div className="p-4 h-screen flex flex-col">
       <ResizablePanelGroup direction='vertical' className="rounded-lg border md:min-w-[450px] flex-1">
         {/* Upper panel */}
-        <ResizablePanel defaultSize={15} minSize={10} maxSize={50}>
-          <div className='bg-gray-900 p-4 h-full flex flex-col'>
+        <ResizablePanel defaultSize={15} minSize={15} maxSize={50}>
+          <div className='bg-gray-500 p-4 h-full flex flex-col'>
             <AnimatedListDemo />
             <div>
               <h1 className="text-3xl font-bold text-white">Progress</h1>
@@ -75,7 +75,7 @@ export default function TerminalPage() {
         <ResizableHandle className='bg-gray-500'/>
         {/* Lower panel */}
         <ResizablePanel defaultSize={50}>
-          <div className="bg-gray-900 rounded-lg p-4 font-mono text-green-400 h-full overflow-y-scroll">
+          <div className="bg-gray-950 rounded-lg p-4 font-mono text-green-400 h-full overflow-y-scroll">
             <div className="mb-4">
               <span className="text-blue-400">user@system</span>:
               <span className="text-purple-400">~/documents</span>$
@@ -110,34 +110,3 @@ export default function TerminalPage() {
   )
 }
 
-
-
-// export function ResizableDemo() {
-//   return (
-//     <ResizablePanelGroup
-//       direction="vertical"
-//     >
-//       <ResizablePanel defaultSize={50}>
-//         <div className="flex h-[200px] items-center justify-center p-6">
-//           <span className="font-semibold">One</span>
-//         </div>
-//       </ResizablePanel>
-//       <ResizableHandle />
-//       <ResizablePanel defaultSize={50}>
-//         <ResizablePanelGroup direction="vertical">
-//           <ResizablePanel defaultSize={25}>
-//             <div className="flex h-full items-center justify-center p-6">
-//               <span className="font-semibold">Two</span>
-//             </div>
-//           </ResizablePanel>
-//           <ResizableHandle />
-//           <ResizablePanel defaultSize={75}>
-//             <div className="flex h-full items-center justify-center p-6">
-//               <span className="font-semibold">Three</span>
-//             </div>
-//           </ResizablePanel>
-//         </ResizablePanelGroup>
-//       </ResizablePanel>
-//     </ResizablePanelGroup>
-//   )
-// }
