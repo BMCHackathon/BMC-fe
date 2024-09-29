@@ -7,31 +7,26 @@ export interface AnimatedListProps {
   className?: string;
   children: React.ReactNode;
   delay?: number;
-  loop?: boolean; // New flag for looping
 }
 
 export const AnimatedList = React.memo(
-  ({ className, children, delay = 1000, loop = true }: AnimatedListProps) => {
+  ({ className, children, delay = 1000 }: AnimatedListProps) => {
     const [index, setIndex] = useState(0);
     const childrenArray = React.Children.toArray(children);
 
     useEffect(() => {
-      const interval = setInterval(() => {
-        setIndex((prevIndex) => {
-          if (prevIndex + 1 === childrenArray.length) {
-            return loop ? 0 : prevIndex; // Reset to 0 if looping, otherwise stay at the end
-          } else {
-            return prevIndex + 1;
-          }
-        });
-      }, delay);
+      if (index < childrenArray.length) {
+        const interval = setInterval(() => {
+          setIndex((prevIndex) => prevIndex + 1);
+        }, delay);
 
-      return () => clearInterval(interval);
-    }, [childrenArray.length, delay, loop]);
+        return () => clearInterval(interval);
+      }
+    }, [index, childrenArray.length, delay]);
 
     const itemsToShow = useMemo(
       () => childrenArray.slice(0, index + 1).reverse(),
-      [index, childrenArray]
+      [index, childrenArray],
     );
 
     return (
@@ -45,7 +40,7 @@ export const AnimatedList = React.memo(
         </AnimatePresence>
       </div>
     );
-  }
+  },
 );
 
 AnimatedList.displayName = "AnimatedList";
