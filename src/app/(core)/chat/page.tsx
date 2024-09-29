@@ -84,7 +84,7 @@ export default function ChatInterface() {
                 <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-white hover:text-gray-300">
                   <Menu size={24} />
                 </button>
-                <h1 className="text-xl font-semibold text-white">ChatGPT</h1>
+                <h1 className="text-xl font-semibold text-white">Chat with us!</h1>
                 <div className="w-6" /> {/* Placeholder for symmetry */}
               </header>
 
