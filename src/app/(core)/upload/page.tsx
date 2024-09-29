@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import LoadingAnimation from '../../components/LoadingAnimation'
-import OSRecognitionMessage from '../../components/OSRecognitionMsg'
+import LoadingAnimation from '../../../components/LoadingAnimation'
+import OSRecognitionMessage from '../../../components/OSRecognitionMsg'
 import { Button } from '@/components/ui/button'
+import DotPattern from '@/components/ui/dot-pattern'
+import { cn } from '@/lib/utils'
 
 export default function DocumentUploadPage() {
   const [file, setFile] = useState<File | null>(null)
@@ -34,9 +36,12 @@ export default function DocumentUploadPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
-        <h1 className="text-2xl font-bold mb-4">Upload Document</h1>
+      <div className="z-0 relative max-h-screen w-full pb-40 overflow-hidden bg-[radial-gradient(97.14%_56.45%_at_51.63%_0%,_#7D56F4_0%,_#4517D7_30%,_#000_100%)]">
+        <DotPattern
+          className={cn("[mask-image:radial-gradient(50vw_circle_at_center,white,transparent)]")}
+          />
+          <div>
+          <h1 className="text-2xl font-bold mb-4">Upload Document</h1>
         <input
           type="file"
           onChange={handleFileChange}
@@ -53,6 +58,6 @@ export default function DocumentUploadPage() {
         {isUploading && <LoadingAnimation />}
         {showOSMessage && <OSRecognitionMessage onClose={handleCloseOSMessage} />}
       </div>
-    </div>
+        </div>
   )
 }
