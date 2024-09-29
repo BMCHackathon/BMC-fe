@@ -99,7 +99,7 @@ export default function DocumentUploadPage() {
   return (
     <>
       <Navbar />
-      <div className="relative min-h-screen w-full bg-gradient-to-br from-[#7D56F4] via-[#4517D7] to-black flex flex-col items-center justify-center px-6 py-12">
+      <div className="relative min-h-screen w-full bg-[radial-gradient(97.14%_56.45%_at_51.63%_0%,_#7D56F4_0%,_#4517D7_30%,_#000_100%)] flex flex-col items-center justify-center px-6 py-12">
         <DotPattern className={cn("[mask-image:radial-gradient(50vw_circle_at_center,white,transparent)]")} />
         <h1 className="text-4xl font-extrabold text-white mb-4 text-center relative z-10" style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', letterSpacing: '0.05em' }}>
           Choose any of the below to start with the process
