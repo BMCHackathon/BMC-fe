@@ -88,6 +88,7 @@ export default function TerminalPage() {
   const [isComplete, setIsComplete] = useState(false)
   const [totalLogs, setTotalLogs] = useState(11) // Total number of logs to simulate
   const router = useRouter()
+  const terminalRef = useRef<HTMLDivElement>(null)
 
   const failedScriptsTitles: any[] = []
   
@@ -99,7 +100,7 @@ export default function TerminalPage() {
 
   useEffect(() => {
     const eventSource = new EventSource('http://localhost:5000/stream/run-audit');
-
+  
     eventSource.onmessage = (event) => {
       const message = JSON.parse(event.data);
       const logType = message.type === "fail" ? 'error' : message.type === 'none' || message.type === 'summary' ? 'none' : 'pass';
@@ -127,13 +128,15 @@ export default function TerminalPage() {
         setFailureCount((prev) => prev + 1);
       }
     };
-
+  
     eventSource.onerror = () => {
       console.error("EventSource failed.");
       eventSource.close();
+      setIsComplete(true);
     };
-
+  
     return () => {
+      eventSource.close();
       eventSource.close();
     };
   }, []);
@@ -179,7 +182,10 @@ export default function TerminalPage() {
         </ResizablePanel>
         <ResizableHandle className='bg-white'/>
         <ResizablePanel defaultSize={50}>
-          <div className="bg-gray-950 rounded-lg p-4 font-mono text-green-400 h-full overflow-y-auto">
+          <div 
+            className="bg-gray-950 rounded-lg p-4 font-mono text-green-400 h-full overflow-y-auto"
+            ref={terminalRef}
+          >
             <div className="mb-4">
               <span className="text-blue-400">user@system</span>:
               <span className="text-purple-400">~/documents</span>$
