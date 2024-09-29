@@ -57,13 +57,13 @@ export default function TerminalPage() {
     <div className="bg-black p-4 h-screen flex flex-col">
       <ResizablePanelGroup direction='vertical' className="rounded-lg border md:min-w-[450px] flex-1">
         {/* Upper panel */}
-        <ResizablePanel defaultSize={50}>
-          <div className='bg-gray-900 p-4 h-full flex flex-col justify-between'>
+        <ResizablePanel defaultSize={15} minSize={10} maxSize={50}>
+          <div className='bg-gray-900 p-4 h-full flex flex-col'>
             <AnimatedListDemo />
             <div>
               <h1 className="text-3xl font-bold text-white">Progress</h1>
               {/* Progress bar */}
-              <div className="bg-gray-800 rounded-lg h-4 mt-2 w-full">
+              <div className="bg-gray-800 rounded-lg h-4 w-full">
                 <div
                   className="bg-green-500 h-full transition-all duration-300"
                   style={{ width: `${progressPercentage}%` }} // Adjust the width dynamically
@@ -72,7 +72,7 @@ export default function TerminalPage() {
             </div>
           </div>
         </ResizablePanel>
-        <ResizableHandle/>
+        <ResizableHandle className='bg-gray-500'/>
         {/* Lower panel */}
         <ResizablePanel defaultSize={50}>
           <div className="bg-gray-900 rounded-lg p-4 font-mono text-green-400 h-full overflow-y-scroll">
