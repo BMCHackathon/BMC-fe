@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { AnimatedListDemo } from '@/components/NotificationList'
@@ -13,30 +13,6 @@ interface LogEntry {
   message: string
   type: 'info' | 'error'
 }
-
-const cardsInfo = [
-  {
-    name: "Success",
-    description: "Audit Passed",
-    time: "15m ago",
-    icon: "💸",
-    color: "#00C9A7",
-  },
-  {
-    name: "Failed",
-    description: "Audit Failed",
-    time: "10m ago",
-    icon: "👤",
-    color: "#FFB800",
-  },
-  {
-    name: "Severity",
-    description: "Audit Severity",
-    time: "5m ago",
-    icon: "💬",
-    color: "#FF3D71",
-  },
-];
 
 interface NotificationProps {
   name: string;
@@ -80,73 +56,117 @@ function Notification({ name, description, icon, color, time }: NotificationProp
   );
 }
 
-
 export default function TerminalPage() {
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [isComplete, setIsComplete] = useState(false)
-  const router = useRouter()
+  const [successCount, setSuccessCount] = useState(0);
+  const [failCount, setFailCount] = useState(0);
+  const [progress, setProgress] = useState(0);
 
-  const totalLogs = 11 // Total number of logs to simulate (same as commands array length)
+  const router = useRouter()
+  const terminalRef = useRef<HTMLDivElement>(null)
+
+  const totalLogs = 11 // Total number of logs to simulate
 
   useEffect(() => {
     const eventSource = new EventSource('http://localhost:5000/stream/run-audit');
-
+  
     eventSource.onmessage = (event) => {
       const message = event.data;
-      const logType = message.startsWith('ERROR') ? 'error' : 'info'; // Determine log type
-      setLogs((prevLogs) => [...prevLogs, { message, type: logType }]);
+  
+      if (message.startsWith("data: Total Successes")) {
+        const successMatch = message.match(/Total Successes: (\d+)/);
+        const failMatch = message.match(/Total Failures: (\d+)/);
+  
+        if (successMatch && failMatch) {
+          const newSuccessCount = parseInt(successMatch[1], 10);
+          const newFailCount = parseInt(failMatch[1], 10);
+          setSuccessCount(newSuccessCount);
+          setFailCount(newFailCount);
+          setProgress(((newSuccessCount + newFailCount) / totalLogs) * 100);
+          if (newSuccessCount + newFailCount >= totalLogs) {
+            setIsComplete(true);
+          }
+        }
+      } else {
+        const logType = message.startsWith('ERROR') ? 'error' : 'info';
+        setLogs((prevLogs) => [...prevLogs, { message, type: logType }]);
+      }
     };
-
+  
     eventSource.onerror = () => {
       console.error("EventSource failed.");
       eventSource.close();
+      setIsComplete(true);
     };
-
+  
     return () => {
-      eventSource.close(); // Cleanup on component unmount
+      eventSource.close();
     };
   }, []);
+  
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [logs]);
 
   const handleGenerateReport = () => {
     router.push('/report')
   }
 
-  // Calculate progress percentage based on the number of logs
-  const progressPercentage = (logs.length / totalLogs) * 100
+  const cardsInfo = [
+    {
+      name: "Success",
+      description: `${successCount} audits passed`,
+      time: "Just now",
+      icon: "💸",
+      color: "#00C9A7",
+    },
+    {
+      name: "Failed",
+      description: `${failCount} audits failed`,
+      time: "Just now",
+      icon: "👤",
+      color: "#FFB800",
+    },
+    {
+      name: "Severity",
+      description: "Audit Severity",
+      time: "5m ago",
+      icon: "💬",
+      color: "#FF3D71",
+    },
+  ];
 
   return (
     <div className="p-4 h-screen flex flex-col">
       <ResizablePanelGroup direction='vertical' className="rounded-lg border md:min-w-[450px] flex-1">
-        {/* Upper panel */}
         <ResizablePanel defaultSize={20} minSize={20} maxSize={20}>
           <div className='bg-gray-500 p-4 h-full flex flex-col'>
-            {/* <AnimatedListDemo /> */}
-            {/* give three cards with info to user same as the animated list card as Pass, Fail, Severtiy*/}
             <div className='flex'>
-              {
-                cardsInfo.map((cardInfo, index) => (
-                  <Notification key={index} {...cardInfo} />
-                ))
-
-              }
+              {cardsInfo.map((cardInfo, index) => (
+                <Notification key={index} {...cardInfo} />
+              ))}
             </div>
           
             <div>
               <h1 className="text-3xl font-bold text-white">Progress</h1>
-              {/* Progress bar */}
               <div className="bg-gray-800 rounded-lg h-4 w-full">
                 <div
                   className="bg-green-500 h-full transition-all duration-300"
-                  style={{ width: `${progressPercentage}%` }} // Adjust the width dynamically
+                  style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
           </div>
         </ResizablePanel>
         <ResizableHandle className='bg-white'/>
-        {/* Lower panel */}
         <ResizablePanel defaultSize={50}>
-          <div className="bg-gray-950 rounded-lg p-4 font-mono text-green-400 h-full overflow-y-auto">
+          <div 
+            className="bg-gray-950 rounded-lg p-4 font-mono text-green-400 h-full overflow-y-auto"
+            ref={terminalRef}
+          >
             <div className="mb-4">
               <span className="text-blue-400">user@system</span>:
               <span className="text-purple-400">~/documents</span>$
@@ -159,14 +179,13 @@ export default function TerminalPage() {
                 {log.message}
               </div>
             ))}
-            {logs.length < totalLogs && (
+            {!isComplete && (
               <div className="animate-pulse">_</div>
             )}
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      {/* Button to generate report */}
       {isComplete && (
         <div className="mt-4 flex justify-center">
           <button

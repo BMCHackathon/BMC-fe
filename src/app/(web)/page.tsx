@@ -49,7 +49,7 @@ export default function Home() {
           {/* Left: Text Section */}
           <motion.div variants={itemVariants} className="lg:w-1/2">
             <BlurIn
-              word="Next.js hero section Web Template"
+              word="Compliance Development Using AIML & GenAI"
               className="font-display text-left lg:text-left text-4xl font-bold text-white w-full max-w-3xl z-10"
               duration={1}
             />
@@ -57,7 +57,7 @@ export default function Home() {
               className="text-xl text-white text-opacity-60 tracking-normal text-left max-w-2xl z-10 mt-4"
               variants={itemVariants}
             >
-              Eye-catching modern Responsive designs. Multiple layouts. Unique animations. Perfect for 2024. Free
+             Automating Compliance Script Generation for Diverse Operating Systems
             </motion.h2>
 
             <div className="z-20 mt-6">

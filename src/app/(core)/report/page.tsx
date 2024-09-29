@@ -1,86 +1,76 @@
-'use client'
+// components/ComplianceReport.js
+import { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import cn from 'classnames'; // Assuming you are using classnames utility for conditional classes
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-interface ComplianceItem {
-  category: string
-  status: 'Compliant' | 'Non-Compliant' | 'Warning'
-  details: string
-}
+// Mock DotPattern component (You can replace it with the actual SVG or component you have)
+const DotPattern = ({ className }) => (
+  <div className={className} style={{ height: '200px', width: '200px', background: 'rgba(255,255,255,0.2)' }} />
+);
 
-export default function ReportPage() {
-  const [complianceItems, setComplianceItems] = useState<ComplianceItem[]>([])
+const ComplianceReport = () => {
+  const [markdownReport, setMarkdownReport] = useState('');
+  const [apiData, setApiData] = useState(null);
 
+  // Fetch API data on component mount
   useEffect(() => {
-    // Simulate fetching compliance data
-    const fetchComplianceData = async () => {
-      // In a real application, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setComplianceItems([
-        {
-          category: 'Data Protection',
-          status: 'Compliant',
-          details: 'All sensitive data is properly encrypted and stored securely.',
-        },
-        {
-          category: 'Access Control',
-          status: 'Warning',
-          details: 'Some user accounts have overly broad permissions. Review and adjust as necessary.',
-        },
-        {
-          category: 'Software Licensing',
-          status: 'Non-Compliant',
-          details: 'Several software licenses have expired. Renew immediately to ensure compliance.',
-        },
-        {
-          category: 'Network Security',
-          status: 'Compliant',
-          details: 'Firewalls and intrusion detection systems are up-to-date and properly configured.',
-        },
-        {
-          category: 'Disaster Recovery',
-          status: 'Compliant',
-          details: 'Backup and recovery procedures are in place and tested regularly.',
-        },
-      ])
-    }
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/compliance-data');
+        const data = await response.json();
+        setApiData(data);
 
-    fetchComplianceData()
-  }, [])
+        // Generate markdown report from the API data
+        const markdown = generateMarkdownReport(data);
+        setMarkdownReport(markdown);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Function to generate the markdown report
+  const generateMarkdownReport = (data) => {
+    return `# Compliance Report\n
+    ## Date: ${new Date().toLocaleDateString()}\n
+    ## Compliance Details:\n
+    ${data.details.map((item) => - ${item.title}: ${item.description}).join('\n')}
+    `;
+  };
+
+  // Function to download the markdown report
+  const downloadMarkdown = () => {
+    const blob = new Blob([markdownReport], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'compliance_report.md';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Compliance Report</h1>
-        {complianceItems.map((item, index) => (
-          <div key={index} className="bg-white shadow overflow-hidden sm:rounded-lg mb-4">
-            <div className="px-4 py-5 sm:px-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                {item.category}
-              </h3>
-              <p className={`mt-1 max-w-2xl text-sm ${
-                item.status === 'Compliant' ? 'text-green-600' :
-                item.status === 'Warning' ? 'text-yellow-600' : 'text-red-600'
-              }`}>
-                {item.status}
-              </p>
-            </div>
-            <div className="border-t border-gray-200">
-              <dl>
-                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">
-                    Details
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {item.details}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-        ))}
+    <div className="relative min-h-screen w-full bg-[radial-gradient(97.14%56.45%_at_51.63%_0%,#7D56F4_0%,#4517D7_30%,#000_100%)] flex flex-col items-center justify-center px-6 py-12">
+      {/* DotPattern component with mask image */}
+      <DotPattern className={cn("[mask-image:radial-gradient(50vw_circle_at_center,white,transparent)]")} />
+
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full">
+        <h1 className="text-2xl font-bold mb-4">Compliance Report</h1>
+        <div className="prose mb-6">
+          <ReactMarkdown>{markdownReport}</ReactMarkdown>
+        </div>
+        <button
+          onClick={downloadMarkdown}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Download Report
+        </button>
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default ComplianceReport;

@@ -1,138 +1,216 @@
-"use client"
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Menu, MessageSquare, PlusCircle, Send, X } from "lucide-react"
-import { cn } from "@/lib/utils"
-import DotPattern from '@/components/ui/dot-pattern'
-import Navbar from '@/components/navbar'
-import Footer from '@/components/footer'
+'use client'
+
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import ReactMarkdown from 'react-markdown';
+import { cn } from "@/lib/utils";
+import { SendIcon, Loader2, ChevronDown } from 'lucide-react';
+import Navbar from "@/components/Navbar";  // Adjust the import path as needed
+import Footer from "@/components/Footer";  // Adjust the import path as needed
+
+const osOptions = ["Linux", "CentOS", "Debian", "Azure"];
 
 export default function ChatInterface() {
-  const [chatHistory, setChatHistory] = useState([]) // Holds all chats
-  const [currentChat, setCurrentChat] = useState([
-    { role: "assistant", content: "Hello! How can I assist you today?" },
-    { role: "user", content: "Can you explain what React is?" },
-    { role: "assistant", content: "React is a popular JavaScript library for building user interfaces." },
-  ])
-  const [inputMessage, setInputMessage] = useState("")
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [selectedOS, setSelectedOS] = useState("");
+  const [inputMessage, setInputMessage] = useState("");
+  const [chatHistory, setChatHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isChatVisible, setIsChatVisible] = useState(false);
+  const chatContainerRef = useRef(null);
+  const dropdownRef = useRef(null);
 
-  const handleSendMessage = () => {
-    if (inputMessage.trim()) {
-      setCurrentChat([...currentChat, { role: "user", content: inputMessage }])
-      setInputMessage("")
-      // Here you would typically send the message to your AI backend
-      // and then add the response to the messages array
+  // Scroll to the bottom of the chat container when chatHistory updates
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-  }
 
-  const handleNewChat = () => {
-    // Save the current chat to history and reset the chat state
-    setChatHistory([...chatHistory, currentChat]);
-    setCurrentChat([]); // Reset current chat for new conversation
-  }
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
 
-  const handleChatSelect = (index) => {
-    // Set the selected chat as the current chat
-    setCurrentChat(chatHistory[index]);
-    setIsSidebarOpen(false); // Close the sidebar after selecting a chat
-  }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [chatHistory]);
+
+  const handleSendMessage = async () => {
+    if (inputMessage.trim()) {
+      setIsLoading(true);
+      const newMessage = { role: "user", content: inputMessage };
+      setChatHistory(prev => [...prev, newMessage]);
+
+      try {
+        const response = await fetch('https://ad98-2402-e280-3e1b-1b4-11ca-cacc-5620-2933.ngrok-free.app/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            os_version: selectedOS.toLowerCase(),
+            message: inputMessage
+          })
+        });
+
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        setChatHistory(prev => [...prev, { role: "assistant", content: data.response }]);
+      } catch (error) {
+        console.error("Error sending message:", error);
+        setChatHistory(prev => [...prev, { role: "assistant", content: "Sorry, there was an error processing your request." }]);
+      } finally {
+        setIsLoading(false);
+      }
+
+      setInputMessage("");
+    }
+  };
+
+  const handleStartChat = () => {
+    setIsChatVisible(true);
+    setChatHistory([{ role: "assistant", content: `Hello! You've selected ${selectedOS}. How can I assist you today?` }]);
+  };
 
   return (
-    <>
-      <Navbar />
-      <div className="relative min-h-screen w-full bg-[radial-gradient(97.14%_56.45%_at_51.63%_0%,_#7D56F4_0%,_#4517D7_30%,_#000_100%)] flex flex-col items-center justify-center px-6 py-12">
-        <DotPattern className={cn("[mask-image:radial-gradient(50vw_circle_at_center,white,transparent)]")} />
-        <div className="relative z-10 w-full max-w-4xl bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-lg overflow-hidden">
-          <div className="flex h-[calc(100vh-6rem)]">
-            {/* Sidebar */}
+    <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-purple-900 via-indigo-900 to-blue-900 flex flex-col">
+      <Navbar /> {/* Add Navbar component here */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="flex-grow w-full h-full max-w-6xl mx-auto bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col p-4"
+      >
+        <div className="flex-grow flex flex-col">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+            className="mb-6 relative"
+            ref={dropdownRef}
+          >
+            <Button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="w-full bg-white bg-opacity-20 text-white hover:bg-opacity-30 justify-between"
+            >
+              {selectedOS || "Select OS"}
+              <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", isDropdownOpen ? "transform rotate-180" : "")} />
+            </Button>
             <AnimatePresence>
-              {isSidebarOpen && (
-                <motion.div
-                  initial={{ x: -300 }}
-                  animate={{ x: 0 }}
-                  exit={{ x: -300 }}
-                  className="w-64 bg-white bg-opacity-20 backdrop-blur-lg text-white p-4 overflow-y-auto"
+              {isDropdownOpen && (
+                <motion.ul
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute z-10 w-full mt-2 bg-white bg-opacity-20 backdrop-blur-lg rounded-lg shadow-lg overflow-hidden"
                 >
-                  <button
-                    onClick={() => setIsSidebarOpen(false)}
-                    className="absolute top-4 right-4 text-white hover:text-gray-300"
-                  >
-                    <X size={24} />
-                  </button>
-                  <h2 className="text-2xl font-bold mb-4">Chat History</h2>
-                  <ul>
-                    {chatHistory.map((chat, index) => (
-                      <li key={index} className="mb-2 flex items-center cursor-pointer" onClick={() => handleChatSelect(index)}>
-                        <MessageSquare size={18} className="mr-2" />
-                        <span>Chat {index + 1}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <button className="mt-4 flex items-center text-sm" onClick={handleNewChat}>
-                    <PlusCircle size={18} className="mr-2" />
-                    <span>New Chat</span>
-                  </button>
-                </motion.div>
+                  {osOptions.map((os) => (
+                    <motion.li
+                      key={os}
+                      whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}
+                      className="cursor-pointer text-white p-3 transition-colors duration-200"
+                      onClick={() => {
+                        setSelectedOS(os);
+                        setIsDropdownOpen(false);
+                        setIsChatVisible(false);
+                      }}
+                    >
+                      {os}
+                    </motion.li>
+                  ))}
+                </motion.ul>
               )}
             </AnimatePresence>
+          </motion.div>
 
-            {/* Main Chat Area */}
-            <div className="flex-1 flex flex-col">
-              {/* Header */}
-              <header className="bg-white bg-opacity-20 backdrop-blur-lg shadow p-4 flex justify-between items-center">
-                <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-white hover:text-gray-300">
-                  <Menu size={24} />
-                </button>
-                <h1 className="text-xl font-semibold text-white">Chat with us!</h1>
-                <div className="w-6" /> {/* Placeholder for symmetry */}
-              </header>
+          {selectedOS && !isChatVisible && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex justify-center"
+            >
+              <Button
+                onClick={handleStartChat}
+                className="bg-blue-600 text-white hover:bg-blue-700 transition duration-300 ease-in-out"
+              >
+                Start Chat
+              </Button>
+            </motion.div>
+          )}
 
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                <AnimatePresence>
-                  {currentChat.map((message, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 50 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -50 }}
-                      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-3 ${message.role === "user" ? "bg-blue-500 text-white" : "bg-white bg-opacity-20 backdrop-blur-lg text-white"}`}
+          <AnimatePresence>
+            {isChatVisible && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.5 }}
+                className="flex-grow flex flex-col"
+              >
+                <motion.div
+                  ref={chatContainerRef}
+                  className="flex-grow overflow-y-auto mb-6 border rounded-lg border-gray-500 bg-white bg-opacity-5 p-4"
+                  style={{ maxHeight: '400px' }}
+                >
+                  <AnimatePresence>
+                    {chatHistory.map((message, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}
                       >
-                        {message.content}
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
+                        <div className={cn(
+                          "inline-block p-3 rounded-lg max-w-[80%]",
+                          message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-100'
+                        )}>
+                          <ReactMarkdown>{message.content}</ReactMarkdown>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
 
-              {/* Input Area */}
-              <div className="bg-white bg-opacity-20 backdrop-blur-lg border-t border-white border-opacity-20 p-4">
-                <div className="flex items-center space-x-2">
-                  <input
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                  className="flex"
+                >
+                  <Input
                     type="text"
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                     placeholder="Type your message here..."
-                    className="flex-1 bg-white bg-opacity-20 backdrop-blur-lg text-white placeholder-gray-300 border border-white border-opacity-20 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-grow mr-2 border-none rounded-full bg-white bg-opacity-20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                  <button
+                  <Button
                     onClick={handleSendMessage}
-                    className="bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={isLoading}
+                    className="bg-blue-600 text-white hover:bg-blue-700 transition duration-300 ease-in-out rounded-full"
                   >
-                    <Send size={20} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+                    {isLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <SendIcon className="w-5 h-5" />
+                    )}
+                  </Button>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
-      <Footer />
-    </>
-  )
+      </motion.div>
+      <Footer /> {/* Add Footer component here */}
+    </div>
+  );
 }
