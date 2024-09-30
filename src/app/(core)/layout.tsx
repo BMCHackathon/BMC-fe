@@ -11,11 +11,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+
           <body className="">
-              <TooltipProvider>
+             <TooltipProvider>
               {children}    
-                  <BottomDock />
-                  </TooltipProvider>
+          <BottomDock />
+          </TooltipProvider>
+              
       </body>
     </html>
   );

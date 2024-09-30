@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { Home, LogOut, Pencil, User } from 'lucide-react';
+import { Home, LogOut, Pencil, User, MessageCircle , Upload} from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export default function BottomDock() {
@@ -23,21 +23,14 @@ export default function BottomDock() {
           },
           {
               href: "/chat",
-              icon: User,
+              icon: MessageCircle,
               label: "Chat",
           },
             {
                 href: "/upload",
-                icon: Pencil,
+                icon: Upload,
                 label: "Upload",
-            },
-            {
-                href: "/logout",
-                icon: LogOut,
-                label: "Logout",
-
-        }
-      
+            },      
     ],
   };
 
@@ -50,7 +43,7 @@ export default function BottomDock() {
       }`}
     >
       <div className="fixed bottom-0 inset-x-0 h-16 w-full bg-background to-transparent backdrop-blur-lg [-webkit-mask-image:linear-gradient(to_top,black,transparent)]"></div>
-      <Dock className="z-50 pointer-events-auto relative mx-auto flex min-h-full h-full items-center px-1 bg-background [box-shadow:0_0_0_1px_rgba(0,0,0,.03),0_2px_4px_rgba(0,0,0,.05),0_12px_24px_rgba(0,0,0,.05)] transform-gpu bg-[#9333EA] ">
+      <Dock className="z-50 pointer-events-auto relative mx-auto flex min-h-full h-full items-center px-1 [box-shadow:0_0_0_1px_rgba(0,0,0,.03),0_2px_4px_rgba(0,0,0,.05),0_12px_24px_rgba(0,0,0,.05)] transform-gpu bg-white bg-opacity-10 backdrop-blur-lg ">
         {DATA.navbar.map((item) => (
           <DockIcon key={item.href}>
             <Tooltip>
