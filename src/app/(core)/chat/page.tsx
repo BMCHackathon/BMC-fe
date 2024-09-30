@@ -78,7 +78,6 @@ export default function ChatInterface() {
 
   return (
     <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-purple-900 via-indigo-900 to-blue-900 flex flex-col">
-      <Navbar /> {/* Add Navbar component here */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -210,7 +209,6 @@ export default function ChatInterface() {
           </AnimatePresence>
         </div>
       </motion.div>
-      <Footer /> {/* Add Footer component here */}
     </div>
   );
 }
